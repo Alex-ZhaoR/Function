@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+import requests
+import lxml
+import json
+improt xlwt
+import xlrd
+import pandas as pd
+
+#读取一个exce表中的列的内容，然后写入到列表中
+#第一个参数是excel文件在电脑中保存的位置
+#第二个参数是需要的列数，从0开始，第三个参数需要的行数，从0开始
+#第四个参数是需要把这列数字写入的list的列表名字
+def read_excel(address,column_needed,row_needed,list):
+    booklist = xlrd.open_workbook(r'%s' % address)
+    table = booklist.sheets()[0]
+    for i in range(0, row_needed):
+        try:
+            list.append(table.row_values(i)[column_needed])
+        except IndexError:
+            print 'The row of %s is wrong' % i
+#test
+column1 = []
+column2 = []
+read_excel('C:\Users\psylife0027\Desktop\demo.xlsx',1,10,column1)
+read_excel('C:\Users\psylife0027\Desktop\demo.xlsx',6,10,column2)
+
+
+
+
+#获取一个网址的JSON格式的信息并用json解析
+def pic_json_obtain(address):
+    header = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, sdch,br',
+        'Accept-Language': 'zh-CN,zh;q=0.8',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Cookie': '_hc.v=90635a62-a640-5326-1407-06ac6f8b330f.1486968749; __utma=1.1699200672.1486968752.1486968752.1487042354.2; __utmc=1; __utmz=1.1486968752.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); cy=1; cye=shanghai; __mta=54812308.1487057291312.1487057291312.1487057291312.1; __mta=54812308.1487057291312.1487057291312.1487123478227.2',
+        'Host': 'm.dianping.com',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+    }
+    pic = requests.get(address, headers=header)
+    return json.loads(pic.text)
+
+#将获取到的data用fram写到excel中
+def data_to_excel(memory_address,*list_given):
+    list_all  = list(list_given)
+    global data
+    data = {}
+    [data.setdefault(x,y) for x,y in enumerate(list_all)]
+    fram = pd.DataFrame(data)
+    fram.to_excel(memory_address,encoding = 'gb18030')
+    
+    
+#已知图片的url地址，将图片下载后并保存为指定的文件名
+def pic_download(url,memory_address,memory_name):
+    pic = requests.get(url)
+    fp  = open(memory_address + memory_name + '.jpg','wb')
+    fp.write(pic.content)
+    fp.close
+    print 'now downloading:' + memory_name
